@@ -104,7 +104,7 @@ class TestPermissions(DataDirTest):
     def test_writes_are_flushed_to_disk_before_the_swap(self):
         with mock.patch("os.fsync", wraps=os.fsync) as fsync:
             storage.atomic_write(os.path.join(config.DATA_DIR, "x.bin"), b"data")
-        self.assertGreaterEqual(fsync.call_count, 2)          # the file itself, then its folder
+        self.assertGreaterEqual(fsync.call_count, 1 if os.name == "nt" else 2)
 
     def test_failed_write_leaves_the_old_file_untouched(self):
         path = os.path.join(config.DATA_DIR, "x.bin")
