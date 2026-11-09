@@ -1,0 +1,46 @@
+# Builds Paksward for Windows, macOS (Intel and Apple silicon) and Linux when you push a tag like v4.0.0,
+# and attaches the downloads and their checksums to a GitHub Release.
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: windows-latest, name: windows}
+          - {os: macos-15-intel, name: macos-intel}
+          - {os: macos-latest,   name: macos-apple-silicon}
+          - {os: ubuntu-latest,  name: linux}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt pyinstaller
+      - run: python -m unittest discover -s tests
+      - run: pyinstaller paksward.spec
+      - name: Zip (Windows)
+        if: runner.os == 'Windows'
+        run: Compress-Archive -Path dist/Paksward -DestinationPath Paksward-${{ matrix.name }}.zip
+      - name: Zip (macOS)
+        if: runner.os == 'macOS'
+        run: ditto -c -k --keepParent dist/Paksward.app Paksward-${{ matrix.name }}.zip
+      - name: Zip (Linux)
+        if: runner.os == 'Linux'
+        run: cd dist && zip -qry ../Paksward-${{ matrix.name }}.zip Paksward
+      - uses: actions/upload-artifact@v4
+        with: {name: "${{ matrix.name }}", path: "Paksward-${{ matrix.name }}.zip"}
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: {path: out, merge-multiple: true}
+      - run: cd out && sha256sum *.zip > SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with: {files: "out/*"}

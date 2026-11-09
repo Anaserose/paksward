@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Download Paksward</title>
+<link rel="icon" href="favicon.png">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<style>
+  :root{--bg:#0d151c;--card:#16222c;--line:#243240;--fg:#e9eff3;--muted:#93a6b4;--accent:#ff7a59}
+  @media (prefers-color-scheme:light){:root{--bg:#f1f5f8;--card:#fff;--line:#d3dee6;--fg:#14212b;--muted:#5b7080}}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+  main{max-width:640px;margin:0 auto;padding:40px 16px 64px}
+  header{display:flex;gap:16px;align-items:center;margin-bottom:8px} header img{width:72px;height:72px;border-radius:18px}
+  h1{margin:0;font-size:28px} .tag{margin:0;color:var(--muted)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:20px}
+  .btn{display:block;text-align:center;padding:14px 18px;border-radius:12px;background:var(--accent);color:#1a0d08;font-weight:700;text-decoration:none}
+  .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px} .row a{flex:1 1 180px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;color:var(--fg);text-decoration:none;text-align:center}
+  h2{font-size:17px;margin:0 0 6px} p,li{color:var(--muted)} li{margin:6px 0} code{font-size:13px;word-break:break-all}
+  .warn{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+  <header><img src="icon.png" alt="" width="72" height="72"><div><h1>Paksward</h1><p class="tag">A password manager that keeps everything on your computer.</p></div></header>
+
+  <div class="card">
+    <a class="btn" id="main" href="#">Download for your computer</a>
+    <div class="row" id="all"></div>
+    <p id="msg" style="margin:12px 0 0;font-size:14px"></p>
+  </div>
+
+  <div class="card warn">
+    <h2>Your computer will show a warning. That is expected.</h2>
+    <p>Paksward is not code-signed (signing costs money), so the system does not recognise the author.</p>
+    <ul>
+      <li><b>Windows:</b> unzip, open <code>Paksward.exe</code>. If SmartScreen appears: <i>More info</i>, then <i>Run anyway</i>.</li>
+      <li><b>Mac:</b> unzip and open Paksward. It will be blocked. Open <i>System Settings &gt; Privacy &amp; Security</i>, scroll down to the message about Paksward, click <i>Open Anyway</i>, and confirm. Only needed the first time. (On older macOS, right-click the app and choose <i>Open</i> works too.)</li>
+      <li><b>Linux:</b> unzip and run <code>./Paksward</code> from a terminal.</li>
+    </ul>
+    <p>To check your download is genuine, compare its SHA-256 with <a href="#" id="sums" style="color:var(--accent)">SHA256SUMS.txt</a>.</p>
+  </div>
+
+  <div class="card">
+    <h2>What it does with your data</h2>
+    <p>Paksward runs only on your computer. It has no accounts, no cloud and no server. The one optional exception is a leaked-password check that you start yourself: it sends only 5-character fingerprints, never your passwords. On first start it makes two random keys (Secret Key and Recovery Key) and shows them once. Save them. If you lose your password <b>and</b> your keys, nobody can open your vault.</p>
+    <p>It does not run on phones yet.</p>
+  </div>
+</main>
+<script>
+  /* The one line to edit: your GitHub "owner/repository". */
+  var REPO = "Anaserose/paksward";
+  var base = "https://github.com/" + REPO + "/releases/latest/download/";
+  var FILES = [["windows", "Windows"], ["macos-apple-silicon", "Mac (Apple chip: M1 or newer)"], ["macos-intel", "Mac (Intel)"], ["linux", "Linux"]];
+  var ua = navigator.userAgent, os = /Windows/.test(ua) ? "windows" : /Mac/.test(ua) ? "macos" : /Linux|X11/.test(ua) && !/Android/.test(ua) ? "linux" : "";
+  var phone = /Android|iPhone|iPad|iPod/.test(ua);
+  var main = document.getElementById("main"), all = document.getElementById("all");
+  if (/OWNER/.test(REPO)) {
+    document.getElementById("msg").textContent = "Setup needed: open docs/index.html and set REPO to your GitHub repository.";
+  }
+  FILES.forEach(function (f) {
+    var a = document.createElement("a"); a.href = base + "Paksward-" + f[0] + ".zip"; a.textContent = f[1]; all.appendChild(a);
+  });
+  document.getElementById("sums").href = base + "SHA256SUMS.txt";
+  if (phone) { main.removeAttribute("href"); main.textContent = "Paksward is for computers (not phones yet)"; main.style.opacity = ".6"; }
+  else if (os === "macos") { main.href = base + "Paksward-macos-apple-silicon.zip"; main.textContent = "Download for Mac (Apple chip)"; document.getElementById("msg").textContent = document.getElementById("msg").textContent || "Older Mac with an Intel chip? Use the Intel link below. Not sure: Apple menu, About This Mac."; }
+  else if (os) { main.href = base + "Paksward-" + os + ".zip"; main.textContent = "Download for " + (os === "windows" ? "Windows" : "Linux"); }
+  else { main.removeAttribute("href"); main.textContent = "Choose your computer below"; }
+</script>
+</body>
+</html>
